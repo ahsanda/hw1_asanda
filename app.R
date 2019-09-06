@@ -168,7 +168,7 @@ server <- function(input, output, session) {
   output$n <- renderUI({
     types <- Energy_sample()$selected_type %>% 
       factor(levels = input$selected_type) 
-    counts <- table(input$selected_type)
+    counts <- nrow(Energy_sample())
     HTML(paste("There are", counts, input$selected_type, "properties in this dataset. <br>"))
   })  
   
