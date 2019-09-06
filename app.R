@@ -93,7 +93,7 @@ ui <- fluidPage(
       # Enter text for plot title ---------------------------------------------
       textInput(inputId = "plot_title", 
                 label = "Plot title", 
-                placeholder = "Enter text to be used as plot title"),
+                placeholder = "Enter text to be used as scatter plot title"),
       
       checkboxInput(inputId = "checkbox"
                     , label = "Data Table?"
@@ -103,7 +103,7 @@ ui <- fluidPage(
       checkboxGroupInput(inputId = "selected_type",
                          label = "Select property type(s):",
                          choices = c("Commercial", "Industrial", "Residential"),
-                         selected = "Industrial"),
+                         selected = "Commercial"),
       
       # Select sample size ----------------------------------------------------
       numericInput(inputId = "n_samp", 
@@ -123,8 +123,9 @@ ui <- fluidPage(
       br(), br()    # a little bit of visual separation
       , plotOutput(outputId = "histogram")
       , br(), br()    # a little bit of visual separation
+      , plotOutput(outputId = "boxplot")
       , DT::dataTableOutput(outputId = 'datatable')
-
+      , br(), br()    # a little bit of visual separation
     )
   )
 )
@@ -150,7 +151,7 @@ server <- function(input, output, session) {
   observe({
     updateNumericInput(session,
                        inputId = "n_samp",
-                       value = min(50, nrow(Energy_subset())),
+                       value = min(10, nrow(Energy_subset())),
                        max = nrow(Energy_subset())
     )
   })
@@ -172,12 +173,20 @@ server <- function(input, output, session) {
   })  
   
   # Create histogram object the plotOutput function is expecting --
-  output$histogram <- renderPlot({
+  output$boxplot <- renderPlot({
     ggplot(data = Energy_sample(), aes_string(input$x)) +
       geom_histogram(stat = "count") +
       labs(title = pretty_plot_title()
       )
   })  
+  
+  # Create box plot object the plotOutput function is expecting --
+  output$histogram <- renderPlot({
+    ggplot(data = Energy_sample(), aes_string(input$x, input$y)) +
+      geom_boxplot(varwidth = T, fill = "plum") +
+      labs(title = pretty_plot_title()
+      )
+  })    
   
   output$datatable <- DT::renderDataTable(
     if(input$checkbox){
