@@ -5,8 +5,8 @@ account: sandybot
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1160270
-bundleId: 2393063
+bundleId: 2393081
 url: https://sandybot.shinyapps.io/hw1_asanda/
-when: 1567808309.12158
+when: 1567809083.01563
 asMultiple: FALSE
 asStatic: FALSE
