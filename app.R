@@ -70,21 +70,18 @@ ui <- fluidPage(
       selectInput(inputId = "y", 
                   label = "Y-axis:",
                   choices = column.names,
-                  #choices = c("IMDB Rating" = "imdb_rating", "IMDB Vote Count"  = "imdb_num_votes", "Critics Score" = "critics_score", "Audience Score" = "audience_score", "Runtime" = "runtime"), 
-                  selected = "COMMUNITY.AREA.NAME"
+                  selected = "KWH.JANUARY.2010"
                   ),
       # Select variable for x-axis ----------------------------------
       selectInput(inputId = "x", 
                   label = "X-axis:",
                   choices = column.names,
-                  ##choices = c("IMDB Rating" = "imdb_rating", "IMDB Vote Count"  = "imdb_num_votes", "Critics Score" = "critics_score", "Audience Score" = "audience_score", "Runtime" = "runtime"), 
-                  ##selected = "critics_score"
+                  selected = "COMMUNITY.AREA.NAME"
                   ),
       selectInput(inputId = "z", 
                   label = "Color by",
                   choices = column.names,
-                  #choices = c("TitleType" = "title_type", "Genre" = "genre", "MPAA Rating" = "mpaa_rating", "Critics Rating" = "critics_rating", "Audience Rating" = "audience_rating"), 
-                  selected = "KWH.JANUARY.2010"
+                  selected = "BUILDING.TYPE"
                   ),
       
       sliderInput(inputId = "alpha" 
@@ -121,10 +118,13 @@ ui <- fluidPage(
     # Output: Show scatterplot --------------------------------------
     mainPanel(
       plotOutput(outputId = "scatterplot")
-      , DT::dataTableOutput(outputId = 'datatable')
       # Print number of obs plotted ---------------------------------
       , uiOutput(outputId = "n"),
       br(), br()    # a little bit of visual separation
+      , plotOutput(outputId = "histogram")
+      , br(), br()    # a little bit of visual separation
+      , DT::dataTableOutput(outputId = 'datatable')
+
     )
   )
 )
@@ -147,13 +147,13 @@ server <- function(input, output, session) {
   })  
   
   # Update the maximum allowed n_samp for selected type movies ------
-  # observe({
-  #   updateNumericInput(session, 
-  #                      inputId = "n_samp",
-  #                      value = min(50, nrow(Energy_subset())),
-  #                      max = nrow(Energy_subset())
-  #   )
-  # })
+  observe({
+    updateNumericInput(session,
+                       inputId = "n_samp",
+                       value = min(50, nrow(Energy_subset())),
+                       max = nrow(Energy_subset())
+    )
+  })
   
   # Create scatterplot object the plotOutput function is expecting --
   output$scatterplot <- renderPlot({
@@ -163,13 +163,20 @@ server <- function(input, output, session) {
            )
     })
   
-  # Print number of movies plotted ----------------------------------
+  # Print number of energy consumption data points plotted ----------------------------------
   output$n <- renderUI({
     types <- Energy_sample()$selected_type %>% 
       factor(levels = input$selected_type) 
-    counts <- table(types)
-    
+    counts <- table(input$selected_type)
     HTML(paste("There are", counts, input$selected_type, "properties in this dataset. <br>"))
+  })  
+  
+  # Create histogram object the plotOutput function is expecting --
+  output$histogram <- renderPlot({
+    ggplot(data = Energy_sample(), aes_string(input$x)) +
+      geom_histogram(stat = "count") +
+      labs(title = pretty_plot_title()
+      )
   })  
   
   output$datatable <- DT::renderDataTable(
@@ -182,12 +189,10 @@ server <- function(input, output, session) {
   
   # Downloadable csv of selected dataset ----
   output$downloadData <- downloadHandler(
-    filename = function() {
-      paste(input$CEnergy, ".csv", sep = "")
-    },
+    filename = paste(input$selected_type, ".csv", sep = ""),
    # modify to only pull for selected options
-     content = function(file) {
-      write.csv(Energy_sample(), file, row.names = FALSE)
+     content = function(filename) {
+      write.csv(Energy_sample(), filename, row.names = FALSE)
     }
   )
 
