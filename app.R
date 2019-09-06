@@ -16,8 +16,8 @@ library(dplyr)
 library(tools)
 
 # Load Data for Shiny Visualization
-file.directory <- "C:/Users/hmdsa/Documents/GitHub/hw1_asanda/Chicago_Energy.csv"
-CEnergy <- read.csv(file.directory)
+#file.directory <- "C:/Users/hmdsa/Documents/GitHub/hw1_asanda/Chicago_Energy.csv"
+CEnergy <- read.csv("Chicago_Energy.csv")
 #View(CEnergy)
 
 # Clean data by removing incomplete reords
